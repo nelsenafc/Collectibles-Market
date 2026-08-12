@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Global Collectibles Market - Landscape &amp; Player Map</title>
+<meta name="description" content="Where the money actually is in collectibles, zoomed from global to Indonesia. Every number carries a confidence rating.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --forest:#4E6128; --moss:#76923C; --leaf:#7E9C40; --wash:#F5F8EE;
+  --ink:#1E2418; --mute:#5F6B52; --line:#DDE4CE; --faint:#EEF2E4;
+  --hard:#2E7D32; --med:#B98B00; --soft:#C0562B;
+  --win:#2E7D32; --lose:#B33A3A;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:#fff;color:var(--ink);
+  font-family:"Proxima Nova",Arial,Helvetica,sans-serif;
+  font-size:15px;line-height:1.55;text-align:left;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1000px;margin:0 auto;padding:0 32px 100px}
+
+/* ---------- scroll progress ---------- */
+#prog{position:fixed;top:0;left:0;height:3px;width:0;z-index:80;
+  background:linear-gradient(90deg,var(--forest),var(--leaf));transition:width .08s linear}
+
+/* ---------- sticky nav ---------- */
+nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .inner{max-width:1000px;margin:0 auto;padding:0 32px;display:flex;
+    align-items:center;gap:4px;height:52px;overflow-x:auto;scrollbar-width:none}
+nav .inner::-webkit-scrollbar{display:none}
+nav .brand{font-weight:800;color:var(--forest);font-size:13px;margin-right:14px;white-space:nowrap}
+nav a{font-size:13px;color:var(--mute);text-decoration:none;padding:6px 11px;
+    border-radius:5px;white-space:nowrap;font-weight:600;transition:background .15s,color .15s}
+nav a:hover{background:var(--wash);color:var(--forest)}
+nav a.on{background:var(--forest);color:#fff}
+
+/* ---------- hero ---------- */
+.hero{padding:56px 0 8px}
+h1{font-size:40px;line-height:1.1;color:var(--forest);margin:0 0 10px;font-weight:800;letter-spacing:-.8px}
+.hero .sub{color:var(--mute);font-size:17px;margin:0 0 6px;max-width:640px}
+.hero .meta{color:#96A188;font-size:13px;margin:0}
+.hero .meta b{color:var(--moss);font-weight:700}
+
+/* ---------- headline strip ---------- */
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:30px 0 0;
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--wash)}
+.strip div{padding:16px 18px;border-right:1px solid var(--line)}
+.strip div:last-child{border-right:0}
+.strip .n{font-size:26px;font-weight:800;color:var(--forest);line-height:1;letter-spacing:-1px}
+.strip .l{font-size:12px;color:var(--mute);margin-top:6px;line-height:1.35}
+@media(max-width:860px){.strip{grid-template-columns:repeat(2,1fr)}
+  .strip div:nth-child(2){border-right:0}.strip div:nth-child(1),.strip div:nth-child(2){border-bottom:1px solid var(--line)}}
+
+/* ---------- answer box ---------- */
+.answer{border:2px solid var(--forest);border-radius:10px;padding:0;margin:32px 0 8px;overflow:hidden}
+.answer .hd{background:var(--forest);color:#fff;padding:10px 22px;font-size:12px;
+   font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.answer .bd{padding:22px 24px}
+.answer p{margin:0 0 12px;font-size:16px}
+.answer p:last-child{margin-bottom:0}
+.answer b{color:var(--forest)}
+
+/* ---------- takeaway cards ---------- */
+.takes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0}
+.take{border:1px solid var(--line);border-radius:9px;padding:18px;background:#fff;position:relative;
+  transition:border-color .18s,transform .18s}
+.take:hover{border-color:var(--moss);transform:translateY(-2px)}
+.take .n{position:absolute;top:14px;right:16px;font-size:32px;font-weight:800;color:var(--faint);line-height:1}
+.take h5{margin:0 0 7px;font-size:14.5px;color:var(--forest);font-weight:800;padding-right:32px}
+.take p{margin:0;font-size:13.5px;color:var(--mute);line-height:1.5}
+@media(max-width:860px){.takes{grid-template-columns:1fr}}
+
+/* ---------- headings ---------- */
+h2{font-size:13px;color:var(--moss);margin:80px 0 6px;font-weight:800;
+   letter-spacing:1.4px;text-transform:uppercase}
+h2 + .h2sub{font-size:30px;color:var(--forest);font-weight:800;margin:0 0 6px;
+   letter-spacing:-.5px;line-height:1.15}
+.deck{color:var(--mute);font-size:16px;margin:0 0 26px;max-width:680px}
+h3{font-size:20px;color:var(--forest);margin:44px 0 6px;font-weight:800;letter-spacing:-.2px}
+h4{font-size:14px;color:var(--moss);margin:26px 0 6px;font-weight:800}
+p{margin:10px 0 14px}
+ul{margin:10px 0 16px;padding-left:20px}li{margin:6px 0}
+
+/* ---------- confidence system ---------- */
+.dots{display:inline-flex;gap:2.5px;vertical-align:middle;margin-left:6px;position:relative;cursor:help}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--line);display:block}
+.dots.d3 i:nth-child(-n+3){background:var(--hard)}
+.dots.d2 i:nth-child(-n+2){background:var(--med)}
+.dots.d1 i:nth-child(1){background:var(--soft)}
+.dots.d0 i{background:#E0C4C4}
+.dots.d0 i:nth-child(1){background:var(--lose)}
+.dots::after{content:attr(data-tip);position:absolute;bottom:150%;left:50%;transform:translateX(-50%);
+  background:var(--ink);color:#fff;font-size:11.5px;font-weight:600;line-height:1.4;
+  padding:7px 10px;border-radius:6px;width:210px;text-align:left;
+  opacity:0;pointer-events:none;transition:opacity .15s;z-index:60}
+.dots:hover::after{opacity:1}
+
+.legend{position:sticky;top:52px;z-index:40;background:var(--wash);
+   border:1px solid var(--line);border-radius:8px;padding:11px 18px;margin:26px 0 0;
+   display:flex;flex-wrap:wrap;gap:20px;align-items:center;font-size:12.5px;color:var(--mute)}
+.legend b{color:var(--forest);font-size:12px;letter-spacing:.4px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* ---------- stat cards ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:24px 0}
+.stat{border:1px solid var(--line);border-radius:9px;padding:17px 15px;background:#fff;
+  transition:border-color .18s}
+.stat:hover{border-color:var(--moss)}
+.stat .n{font-size:29px;font-weight:800;color:var(--forest);line-height:1;letter-spacing:-1px;
+  font-variant-numeric:tabular-nums}
+.stat .n.neg{color:var(--lose)}
+.stat .l{font-size:12.5px;color:var(--mute);margin-top:8px;line-height:1.4}
+.stat .l b{color:var(--ink);font-weight:700}
+@media(max-width:860px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease}
+.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+/* ---------- zoom funnel ---------- */
+.funnel{margin:28px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.frow{display:grid;grid-template-columns:120px 1fr 150px;align-items:center;
+  gap:16px;padding:15px 20px;border-bottom:1px solid var(--faint)}
+.frow:last-child{border-bottom:0}
+.frow .geo{font-weight:800;color:var(--forest);font-size:15px}
+.frow .geo em{display:block;font-style:normal;font-size:11.5px;color:var(--mute);font-weight:600;margin-top:2px}
+.fbar{height:26px;border-radius:4px;position:relative;display:flex;align-items:center;
+  padding-left:11px;color:#fff;font-size:12.5px;font-weight:700;min-width:44px;
+  width:0;transition:width .9s cubic-bezier(.2,.7,.3,1);white-space:nowrap;overflow:hidden}
+.frow .q{font-size:12px;color:var(--mute);text-align:right;line-height:1.35}
+.frow .q b{display:block;font-size:12.5px}
+@media(max-width:860px){.frow{grid-template-columns:1fr;gap:8px}.frow .q{text-align:left}}
+
+/* ---------- value stack ---------- */
+.stack{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:26px 0}
+.stack .shd{display:grid;grid-template-columns:170px 1fr 120px;gap:14px;padding:11px 18px;
+  background:var(--forest);color:#fff;font-size:11.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+.srow{display:grid;grid-template-columns:170px 1fr 120px;gap:14px;padding:15px 18px;
+  align-items:center;border-bottom:1px solid var(--faint);transition:background .15s}
+.srow:last-child{border-bottom:0}
+.srow:hover{background:var(--wash)}
+.srow .layer{font-weight:800;font-size:14px;color:var(--ink)}
+.srow .layer em{display:block;font-style:normal;font-size:11.5px;color:var(--mute);font-weight:600;margin-top:3px}
+.srow .who{font-size:13px;color:var(--mute);line-height:1.45}
+.srow .who b{color:var(--ink)}
+.mbar{display:flex;align-items:center;gap:8px}
+.mbar .t{height:8px;border-radius:4px;flex:1;background:var(--faint);overflow:hidden}
+.mbar .t i{display:block;height:100%;border-radius:4px;width:0;transition:width .9s cubic-bezier(.2,.7,.3,1)}
+.mbar .v{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:860px){.stack .shd{display:none}.srow{grid-template-columns:1fr;gap:9px}}
+
+/* ---------- callouts ---------- */
+.call{border-left:4px solid var(--moss);background:var(--wash);padding:16px 20px;
+  margin:22px 0;border-radius:0 8px 8px 0}
+.call.warn{border-left-color:var(--soft);background:#FDF4EF}
+.call.stop{border-left-color:var(--lose);background:#FBEFEF}
+.call.new{border-left-color:var(--hard);background:#F1F8F1}
+.call .t{font-weight:800;color:var(--forest);display:block;margin-bottom:5px;font-size:14px}
+.call.warn .t{color:var(--soft)}.call.stop .t{color:var(--lose)}.call.new .t{color:var(--hard)}
+.call p{margin:6px 0 0}.call p:first-of-type{margin-top:0}
+.flag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.6px;
+  background:var(--hard);color:#fff;padding:2px 7px;border-radius:3px;margin-right:7px;
+  vertical-align:2px}
+.flag.fix{background:var(--lose)}
+
+/* ---------- charts ---------- */
+.chartbox{border:1px solid var(--line);border-radius:10px;padding:20px 22px;margin:24px 0;background:#fff}
+.chartbox h4{margin:0 0 3px;color:var(--forest);font-size:15px}
+.chartbox .cap{font-size:13px;color:var(--mute);margin:0 0 16px}
+.chartwrap{position:relative;height:300px}
+.chartwrap.tall{height:400px}
+.chartwrap.xtall{height:440px}
+.sowhat{margin-top:14px;padding-top:13px;border-top:1px solid var(--faint);
+  font-size:13.5px;color:var(--ink)}
+.sowhat b{color:var(--forest)}
+
+/* ---------- versus ---------- */
+.vs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;margin:24px 0}
+.vcard{border:1px solid var(--line);border-radius:9px;padding:18px;text-align:left}
+.vcard.good{border-color:#B9D9BA;background:#F4FAF4}
+.vcard.bad{border-color:#E8C4C4;background:#FCF5F5}
+.vcard .co{font-size:15px;font-weight:800;color:var(--ink);margin-bottom:2px}
+.vcard .tag{font-size:11.5px;color:var(--mute);margin-bottom:12px}
+.vcard .big{font-size:32px;font-weight:800;line-height:1;letter-spacing:-1px}
+.vcard.good .big{color:var(--win)}.vcard.bad .big{color:var(--lose)}
+.vcard .bl{font-size:11.5px;color:var(--mute);margin-top:5px}
+.vcard .why{font-size:12.5px;color:var(--mute);margin-top:13px;padding-top:11px;border-top:1px solid rgba(0,0,0,.07);line-height:1.45}
+@media(max-width:860px){.vs{grid-template-columns:1fr}}
+
+/* ---------- tables ---------- */
+.tscroll{overflow-x:auto;margin:14px 0 6px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th{background:var(--forest);color:#fff;text-align:left;padding:9px 12px;font-weight:700;font-size:12.5px;vertical-align:bottom}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:nth-child(odd){background:var(--wash)}
+tbody tr.hide{display:none}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+.small{font-size:12px;color:var(--mute);margin-top:5px}
+
+/* ---------- filter ---------- */
+.filter{display:flex;align-items:center;gap:10px;margin:4px 0 2px}
+.filter input{flex:1;max-width:280px;border:1px solid var(--line);border-radius:7px;
+  padding:8px 12px;font-size:13px;font-family:inherit;color:var(--ink);background:#fff}
+.filter input:focus{outline:none;border-color:var(--moss)}
+.filter .cnt{font-size:12px;color:var(--mute)}
+
+/* ---------- disclosure ---------- */
+details{border:1px solid var(--line);border-radius:9px;margin:18px 0;background:#fff}
+summary{cursor:pointer;padding:13px 18px;font-weight:700;color:var(--forest);
+  font-size:14px;list-style:none;display:flex;align-items:center;gap:9px}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";display:inline-flex;align-items:center;justify-content:center;
+  width:19px;height:19px;border-radius:4px;background:var(--wash);color:var(--forest);
+  font-weight:800;font-size:14px;border:1px solid var(--line);flex:none}
+details[open] summary::before{content:"\2212"}
+summary:hover{background:var(--wash)}
+.dbody{padding:2px 18px 18px}
+.dbody table{margin-top:6px}
+
+/* ---------- gap grid ---------- */
+.gaps{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:22px 0}
+.gap{border:1px solid var(--line);border-radius:9px;padding:16px 18px;background:#fff}
+.gap .st{font-size:11px;font-weight:800;letter-spacing:.6px;color:var(--lose);
+  background:#FBEFEF;padding:2px 7px;border-radius:3px;display:inline-block;margin-bottom:8px}
+.gap .st.part{color:var(--med);background:#FBF3DA}
+.gap .st.has{color:var(--win);background:#EFF7EF}
+.gap h5{margin:0 0 5px;font-size:14.5px;color:var(--forest);font-weight:800}
+.gap p{margin:0;font-size:13px;color:var(--mute);line-height:1.5}
+@media(max-width:860px){.gaps{grid-template-columns:1fr}}
+
+/* ---------- scorecard ---------- */
+.score{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+.scol{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.scol .h{padding:12px 18px;font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#fff}
+.scol.d .h{background:var(--hard)}
+.scol.i .h{background:var(--lose)}
+.sitem{display:flex;gap:11px;padding:13px 18px;border-bottom:1px solid var(--faint);font-size:13px;line-height:1.45}
+.sitem:last-child{border-bottom:0}
+.sitem .m{font-weight:800;flex:none;width:16px;text-align:center}
+.scol.d .m{color:var(--win)}.scol.i .m{color:var(--lose)}
+.sitem b{color:var(--ink)}
+@media(max-width:860px){.score{grid-template-columns:1fr}}
+
+/* ---------- decision ---------- */
+.paths{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+.path{border-radius:10px;padding:22px;border:2px solid}
+.path.a{border-color:#E8C4C4;background:#FCF6F6}
+.path.b{border-color:var(--forest);background:var(--wash)}
+.path .lbl{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+.path.a .lbl{color:var(--lose)}.path.b .lbl{color:var(--forest)}
+.path h5{margin:0 0 10px;font-size:18px;color:var(--ink);font-weight:800;line-height:1.25}
+.path p{margin:0 0 10px;font-size:14px;color:var(--mute);line-height:1.5}
+.path .out{font-size:13px;font-weight:700;padding-top:11px;border-top:1px solid rgba(0,0,0,.08)}
+.path.a .out{color:var(--lose)}.path.b .out{color:var(--forest)}
+@media(max-width:860px){.paths{grid-template-columns:1fr}}
+
+.kill{border:1px solid var(--line);border-radius:9px;overflow:hidden;margin:22px 0}
+.kill .khd{background:var(--wash);padding:11px 18px;font-size:12px;font-weight:800;
+  letter-spacing:.5px;color:var(--forest);text-transform:uppercase;border-bottom:1px solid var(--line)}
+.kill .krow{display:grid;grid-template-columns:118px 1fr;gap:14px;padding:13px 18px;
+  border-bottom:1px solid var(--faint);font-size:13.5px}
+.kill .krow:last-child{border-bottom:0}
+.kill .krow .tag{font-size:11px;font-weight:800;letter-spacing:.4px;padding:3px 8px;
+  border-radius:3px;height:fit-content;text-align:center}
+.tag.k{background:#FBEFEF;color:var(--lose)}
+.tag.c{background:#EFF7EF;color:var(--win)}
+.tag.w{background:#FBF3DA;color:var(--med)}
+@media(max-width:860px){.kill .krow{grid-template-columns:1fr;gap:7px}.kill .krow .tag{justify-self:start}}
+
+/* ---------- timeline ---------- */
+.tl{border-left:2px solid var(--line);margin:24px 0 24px 8px;padding-left:22px}
+.titem{position:relative;padding-bottom:20px}
+.titem:last-child{padding-bottom:0}
+.titem::before{content:"";position:absolute;left:-29px;top:5px;width:12px;height:12px;
+  border-radius:50%;background:#fff;border:2.5px solid var(--moss)}
+.titem.hot::before{border-color:var(--lose);background:var(--lose)}
+.titem .d{font-size:11.5px;font-weight:800;color:var(--moss);letter-spacing:.5px;text-transform:uppercase}
+.titem.hot .d{color:var(--lose)}
+.titem .b{font-size:13.5px;color:var(--ink);margin-top:3px;line-height:1.5}
+
+/* ---------- back to top ---------- */
+#top-btn{position:fixed;right:22px;bottom:22px;z-index:70;width:42px;height:42px;
+  border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--forest);
+  font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.10);
+  opacity:0;pointer-events:none;transition:opacity .25s,transform .18s;line-height:1}
+#top-btn.show{opacity:1;pointer-events:auto}
+#top-btn:hover{transform:translateY(-2px);border-color:var(--moss)}
+
+footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--line);font-size:12px;color:var(--mute)}
+footer a{color:var(--mute)}footer li{margin:4px 0}
+footer summary{font-size:13px;padding:11px 0}
+footer details{border:0}footer .dbody{padding:0}
+</style>
+</head>
+<body>
+
+<div id="prog"></div>
+
+<nav><div class="inner">
+  <span class="brand">Collectibles Market</span>
+  <a href="#top" class="on">Answer</a>
+  <a href="#global">Global</a>
+  <a href="#stack">The stack</a>
+  <a href="#asia">Asia</a>
+  <a href="#sea">SEA</a>
+  <a href="#indo">Indonesia</a>
+  <a href="#window">The window</a>
+  <a href="#verdict">Verdict</a>
+</div></nav>
+
+<div class="wrap">
+
+<div class="hero" id="top">
+  <h1>Global Collectibles Market</h1>
+  <p class="sub">Zooming from the world, to Asia, to Southeast Asia, to Indonesia - and what the data actually supports if you want to build here.</p>
+  <p class="meta">Updated August 2026 &middot; Scope includes art, antiques, watches and luxury &middot; Every number carries a confidence rating &middot; <b>Revision 2</b> adds Indonesian grading fieldwork and the PSA capacity story</p>
+</div>
+
+<div class="strip rv">
+  <div><div class="n" data-count="12.4" data-suf="M" data-dec="1">12.4M</div><div class="l">Cards stuck in PSA's backlog, and rising <span class="dots d3" data-tip="Audited filing or transaction census. PSA's own public backlog tracker, 28 July 2026."><i></i><i></i><i></i></span></div></div>
+  <div><div class="n" data-count="4" data-suf="" data-dec="0">4</div><div class="l">PSA service tiers closed to new submissions since 2 June 2026 <span class="dots d3" data-tip="Audited filing or transaction census. PSA service level update, May 2026."><i></i><i></i><i></i></span></div></div>
+  <div><div class="n">Rp200k</div><div class="l">What an Indonesian lab charges per card. PSA via broker starts at Rp1.5M <span class="dots d2" data-tip="Company PR or serious survey. Public price lists from ZMG and Nimitz Cards, August 2026."><i></i><i></i><i></i></span></div></div>
+  <div><div class="n" data-count="185" data-pre="+" data-suf="%" data-dec="0">+185%</div><div class="l">Pop Mart revenue growth, 2025 <span class="dots d3" data-tip="Audited filing or transaction census. Pop Mart HK 9992 annual results."><i></i><i></i><i></i></span></div></div>
+</div>
+
+<div class="answer">
+  <div class="hd">The answer in 30 seconds</div>
+  <div class="bd">
+    <p>The collectibles category is real and growing, but <b>almost all the growth is in the secondary market, not the primary one</b>. New art sales grew 4% last year. Card grading grew 32%. Collectible toys grew 32%. The money is moving into circulation and certification, not creation.</p>
+    <p>Every published "global collectibles market size" is unreliable - the two biggest research firms are <b>2x apart</b> on the same category. So this report ignores them and builds up from filings, auction totals and grading counts.</p>
+    <p>For Indonesia the framing has changed since the first draft. Demand was already proven. What is new is that <b>the trust layer is no longer empty - it is being claimed right now</b>, by local graders nobody has heard of, while PSA sits on a 12.4 million card backlog and has shut its four cheapest tiers worldwide. The gap is still the interesting part. It is just closing faster than a market-size slide would suggest.</p>
+  </div>
+</div>
+
+<div class="takes">
+  <div class="take rv"><span class="n">1</span><h5>Owned IP earns 10x borrowed IP</h5><p>Pop Mart nets ~35%. Top Toy nets 2.8%. Funko loses money. Same category, same year. The only variable is who owns the character.</p></div>
+  <div class="take rv"><span class="n">2</span><h5>Trust is the highest-margin layer</h5><p>PSA has 72% of card grading. It makes nothing, owns no IP, holds no inventory. It just certifies - and that is the most defensible seat in the whole stack.</p></div>
+  <div class="take rv"><span class="n">3</span><h5>The incumbent is capacity-constrained</h5><p>PSA paused four service tiers in June 2026 under a 10 million card backlog. Two months later the backlog is 12.4 million. Monopolies leak when they run out of throughput.</p></div>
+</div>
+
+<div class="legend">
+  <b>CONFIDENCE</b>
+  <span><span class="dots d3" data-tip="Audited filing, exchange disclosure, or a full transaction census. Quote it freely."><i></i><i></i><i></i></span> Audited filing or transaction census</span>
+  <span><span class="dots d2" data-tip="Company press release or a serious industry survey. Directionally solid, self-reported."><i></i><i></i><i></i></span> Company PR or serious survey</span>
+  <span><span class="dots d1" data-tip="Research-firm estimate with no published method. Use the trend, not the decimal."><i></i><i></i><i></i></span> Research-firm estimate</span>
+  <span><span class="dots d0" data-tip="Report-mill number. Definitional artifact, not a measurement. Do not put this in a deck."><i></i><i></i><i></i></span> Report-mill number, directional only</span>
+</div>
+
+<!-- ================= HOW BIG ================= -->
+<h2 id="global">Part 1</h2>
+<div class="h2sub">How big is it, really?</div>
+<p class="deck">Two ways to count this market. One of them is worthless. Here is both, so you can see why.</p>
+
+<div class="call stop">
+  <span class="t">Do not quote a "total collectibles market size" to anyone</span>
+  <p>Grand View Research says <b>USD 320.3B</b> for 2025. Market Decipher says <b>USD 602.4B</b> for 2026. Same category, adjacent years, nearly 2x apart <span class="dots d0" data-tip="Report-mill number. Definitional artifact, not a measurement."><i></i><i></i><i></i></span></p>
+  <p>Neither publishes a transaction-level method. Each firm draws the category line wherever it likes - some count all art, some count new toys, some count resale GMV, some count primary retail. The number is a definitional artifact, not a measurement. If you put it in a deck and someone competent is in the room, you lose the room.</p>
+</div>
+
+<p><strong>So this report counts differently.</strong> Below are the segments that have real, traceable reporting. They overlap - a graded Charizard selling on eBay gets counted twice - so they deliberately do not sum to a TAM. But each one you can defend individually.</p>
+
+<div class="chartbox">
+  <h4>What the market is made of</h4>
+  <p class="cap">2025, USD billions. Bar colour shows how much you can trust the number.</p>
+  <div class="chartwrap tall"><canvas id="chGlobal"></canvas></div>
+  <div class="sowhat"><b>Read this way:</b> art is the biggest single slice and also the slowest-growing. Watch resale is enormous but nobody agrees on the size - the low and high estimates differ by 2x, which is why both bars are shown. Trading cards look small at $7.8B but that is <em>primary sales only</em>; the secondary card market is almost certainly larger and is not counted anywhere.</div>
+</div>
+
+<div class="chartbox">
+  <h4>The single chart this whole report rests on</h4>
+  <p class="cap">Year-on-year growth, 2025 unless noted. Green is secondary market and infrastructure. Amber is primary sale and creation.</p>
+  <div class="chartwrap tall"><canvas id="chGrowth"></canvas></div>
+  <div class="sowhat"><b>So what:</b> sort the category by growth and it sorts itself by layer. Every fast line is resale, certification, or a company that owns its IP and controls its own scarcity. Every slow line is somebody selling a newly made object at first retail. Nothing in the top half of this chart is a manufacturing business.</div>
+</div>
+
+<div class="stats">
+  <div class="stat rv"><div class="n" data-count="59.6" data-pre="$" data-suf="B" data-dec="1">$59.6B</div><div class="l"><b>Global art &amp; antiques, 2025</b><br>+4% YoY, first rise after two down years <span class="dots d2" data-tip="Company PR or serious survey. Art Basel and UBS Global Art Market Report 2026."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n" data-count="26" data-suf="M+" data-dec="0">26M+</div><div class="l"><b>Trading cards graded worldwide</b><br>+32% in one year <span class="dots d3" data-tip="Audited filing or transaction census. cllct, compiled from all major authenticators."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n" data-count="19" data-pre="~" data-suf="%" data-dec="0">~19%</div><div class="l"><b>Collectibles share of global toy sales</b><br>the segment grew 32% <span class="dots d2" data-tip="Company PR or serious survey. Circana global toy industry data."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n" data-count="28" data-suf="%" data-dec="0">28%</div><div class="l"><b>Toy spend from buyers aged 12+</b><br>adults buying for themselves <span class="dots d2" data-tip="Company PR or serious survey. Circana kidult segment data."><i></i><i></i><i></i></span></div></div>
+</div>
+
+<div class="call">
+  <span class="t">The one structural pattern worth remembering</span>
+  <p>Look at what is growing fast: grading +32%, collectible toys +32%, kidults at 28% of toy spend, watch resale outpacing new watches. Now look at what is growing slowly: art, at +4%, the one pure primary market on the list.</p>
+  <p>Money is not flowing into <em>making</em> new collectibles. It is flowing into the machinery that makes existing objects tradeable - grading, authentication, marketplaces, price discovery. That is where the margin is and that is where the moat is.</p>
+</div>
+
+<details>
+  <summary>The full category ranking - top 10 by defensible size</summary>
+  <div class="dbody">
+  <div class="tscroll">
+  <table>
+  <thead><tr><th style="width:5%">#</th><th style="width:24%">Category</th><th style="width:16%">2025 size</th><th>Structure note</th><th style="width:8%">Conf.</th></tr></thead>
+  <tbody>
+  <tr><td class="num">1</td><td><strong>Fine art &amp; antiques</strong></td><td class="num">USD 59.6B</td><td>Oldest, largest, slowest. Dealer-led [~55%] not auction-led. Three countries hold 76% of value.</td><td><span class="dots d2" data-tip="Company PR or serious survey. Art Basel and UBS."><i></i><i></i><i></i></span></td></tr>
+  <tr><td class="num">2</td><td><strong>Luxury watches, secondary</strong></td><td class="num">USD 17-32B</td><td>Rolex, Patek, AP carry the liquidity. Only category where the brand manages its own resale [Rolex CPO].</td><td><span class="dots d1" data-tip="Research-firm estimate. Low and high estimates differ by roughly 2x."><i></i><i></i><i></i></span></td></tr>
+  <tr><td class="num">3</td><td><strong>Sneakers &amp; streetwear resale</strong></td><td class="num">USD 18.3B</td><td>Peaked 2021-22, now normalising. Authentication is the product, not the shoe.</td><td><span class="dots d1" data-tip="Research-firm estimate with no published method."><i></i><i></i><i></i></span></td></tr>
+  <tr><td class="num">4</td><td><strong>Trading cards, primary</strong></td><td class="num">USD 7.8B</td><td>Pokemon 42%, then Bandai, Wizards, Konami. Licence-gated, effectively impossible to enter.</td><td><span class="dots d1" data-tip="Research-firm estimate. Primary sales only - secondary is uncounted."><i></i><i></i><i></i></span></td></tr>
+  <tr><td class="num">5</td><td><strong>Designer / blind-box toys</strong></td><td class="num">~USD 12B+</td><td>China alone RMB 82.5B [~USD 12.2B], +40.5%. Fastest-growing major category on earth.</td><td><span class="dots d2" data-tip="Company PR or serious survey. Xinhua citing research."><i></i><i></i><i></i></span></td></tr>
+  <tr><td class="num">6</td><td><strong>Anime / ACG merch [guzi]</strong></td><td class="num">~USD 23B China</td><td>RMB 168.9B in China in 2024 per iiMedia. Big number, weak source. Real trend, unreliable decimal.</td><td><span class="dots d1" data-tip="Research-firm estimate. iiMedia. Trend real, decimal not."><i></i><i></i><i></i></span></td></tr>
+  <tr><td class="num">7</td><td><strong>Sports memorabilia, secondary</strong></td><td class="num">no clean figure</td><td>Fanatics + eBay/Goldin + PSA define it. Grading volume [10M sports cards] is the best proxy.</td><td><span class="dots d1" data-tip="Research-firm estimate. No published transaction census exists."><i></i><i></i><i></i></span></td></tr>
+  <tr><td class="num">8</td><td><strong>Action figures &amp; statues</strong></td><td class="num">~USD 7.3B</td><td>Anime figures, movie tie-ins. Bandai's Gundam line alone is ~USD 880M of it.</td><td><span class="dots d1" data-tip="Research-firm estimate."><i></i><i></i><i></i></span></td></tr>
+  <tr><td class="num">9</td><td><strong>Coins, stamps, comics</strong></td><td class="num">no clean figure</td><td>Old guard. eBay reports strong growth here. Aging buyer base is the structural risk.</td><td><span class="dots d1" data-tip="Research-firm estimate."><i></i><i></i><i></i></span></td></tr>
+  <tr><td class="num">10</td><td><strong>Handbags, wine, whisky, cars</strong></td><td class="num">no clean figure</td><td>Luxury adjacencies. Both big auction houses credit "luxury" for their 2025 uplift, so material but unsized.</td><td><span class="dots d1" data-tip="Research-firm estimate."><i></i><i></i><i></i></span></td></tr>
+  </tbody></table>
+  </div>
+  </div>
+</details>
+
+<!-- ================= WHO WINS ================= -->
+<h3>Who is actually making money</h3>
+<p>Before the full player table, the comparison that explains everything else in this report.</p>
+
+<div class="vs">
+  <div class="vcard good rv">
+    <div class="co">Pop Mart</div><div class="tag">Owns Labubu, Molly, Skullpanda</div>
+    <div class="big">~35%</div><div class="bl">net margin, 2025</div>
+    <div class="why">USD 5.1B revenue, +185%. Owns the characters, controls the retail, sets the scarcity. A toy company with software margins.</div>
+  </div>
+  <div class="vcard rv">
+    <div class="co">Top Toy</div><div class="tag">Retails other people's IP</div>
+    <div class="big" style="color:var(--med)">2.8%</div><div class="bl">net margin, 2025</div>
+    <div class="why">USD 525M revenue, +88%. Biggest collectible toy <em>retailer</em> in China - and profit still fell 66%. Growth without ownership is a distribution job.</div>
+  </div>
+  <div class="vcard bad rv">
+    <div class="co">Funko</div><div class="tag">Licenses everything</div>
+    <div class="big">-7.4%</div><div class="bl">net margin, 2025</div>
+    <div class="why">USD 908M revenue, USD 67M net loss. No owned characters, no scarcity mechanic, no secondary-market capture. The cautionary tale.</div>
+  </div>
+</div>
+
+<div class="chartbox">
+  <h4>Same category, same year, three outcomes</h4>
+  <p class="cap">Net margin, 2025. The variable is IP ownership, not size, growth or execution.</p>
+  <div class="chartwrap"><canvas id="chMargin"></canvas></div>
+  <div class="sowhat"><b>So what:</b> Top Toy grew 88% and Funko has the strongest brand recognition of the three with consumers. Neither matters. The one that owns its characters keeps twelve times the margin of the one that rents them, and the one that rents everything loses money outright.</div>
+</div>
+
+<div class="chartbox">
+  <h4>Named global players by 2025 revenue</h4>
+  <p class="cap">USD billions. Auction house figures are total sales, not revenue - they earn a commission on this, typically low-to-mid teens percent.</p>
+  <div class="chartwrap tall"><canvas id="chPlayers"></canvas></div>
+  <div class="sowhat"><b>What is missing from this chart matters most:</b> Collectors/PSA does not disclose revenue, so it does not appear - yet it holds ~80% of card grading and is arguably the most strategically valuable company on the list. eBay does not split collectibles GMV either, though it named collectibles the single largest contributor to its GMV growth.</div>
+</div>
+
+<details>
+  <summary>Full player table - revenue, breakdown, and where to be sceptical</summary>
+  <div class="dbody">
+  <div class="filter">
+    <input type="text" id="pfilter" placeholder="Filter players, e.g. Pop Mart, private, grading">
+    <span class="cnt" id="pcount"></span>
+  </div>
+  <div class="tscroll">
+  <table id="ptable">
+  <thead><tr><th style="width:15%">Player</th><th style="width:11%">2025 revenue</th><th style="width:9%">Growth</th><th>Detail and what to watch</th><th style="width:7%">Conf.</th></tr></thead>
+  <tbody>
+  <tr><td><strong>Pop Mart</strong><br><span class="small">HK 9992</span></td><td class="num">RMB 37.12B<br>~USD 5.1B</td><td class="num">+184.7%</td><td>China RMB 20.85B [56.2%, +134.6%] &middot; APAC ex-China RMB 8.01B [+157.6%] &middot; Americas RMB 6.81B [+748.4%] &middot; Europe RMB 1.45B [+506.3%]. Adjusted net profit RMB 13.08B, +284.5%. Stock still fell ~15% post-results on single-IP concentration risk.</td><td><span class="dots d3" data-tip="Audited filing. Hong Kong listed annual results."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>Fanatics Collectibles</strong><br><span class="small">private</span></td><td class="num">~USD 5B</td><td class="num">reported 3x</td><td><strong>Treat with suspicion.</strong> Claimed ~38% of Fanatics' ~USD 13B total, but management guided USD 2B for 2025 back in April 2025. A jump to USD 5B contradicts their own mid-year guidance and there are no audited filings. Verified base: USD 1.6B in 2024, EBITDA above 20%. Owns Topps plus exclusive MLB, NBA, NFL card rights.</td><td><span class="dots d1" data-tip="Research-firm estimate. Contradicts the company's own guidance."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>Pokemon Company</strong><br><span class="small">private</span></td><td class="num">~USD 5.4B TCG</td><td class="num">n/a</td><td>~42% of the global physical card market. TCG Pocket did USD 90.4M in February 2025 alone. The single most important IP in collectibles - not for sale, not licensable, and increasingly the reason the grading industry exists at all.</td><td><span class="dots d1" data-tip="Research-firm estimate. Private company, no disclosure."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>Bandai Namco</strong><br><span class="small">TSE 7832</span></td><td class="num">JPY 1,241.5B<br>~USD 8.3B</td><td class="num">+18.2%</td><td>FY ended Mar-2025. Gundam JPY 127.2B [~USD 880M], One Piece JPY 69.5B, Dragon Ball JPY 13.4B. <strong>Card revenue not disclosed separately</strong> - anyone quoting a Bandai TCG figure is estimating.</td><td><span class="dots d3" data-tip="Audited filing. Tokyo listed fact book."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>Sotheby's</strong><br><span class="small">private, Drahi</span></td><td class="num">USD 7.0B sales</td><td class="num">+17%</td><td>Sales total, not revenue. Record year credited to luxury, trophy lots and private deals. Spirits alone did USD 127.5M.</td><td><span class="dots d2" data-tip="Company PR. Self-reported sales total, not audited revenue."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>Christie's</strong><br><span class="small">private, Pinault</span></td><td class="num">USD 6.2B sales</td><td class="num">+6%</td><td>Top lot of the entire 2025 market: Klimt's <em>Bildnis Elisabeth Lederer</em> at USD 205M from the Lauder collection.</td><td><span class="dots d2" data-tip="Company PR. Self-reported sales total, not audited revenue."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>eBay</strong><br><span class="small">NASDAQ EBAY</span></td><td class="num">not split out</td><td class="num">double digit</td><td>Collectibles was the <em>largest single contributor</em> to eBay GMV growth in Q1 2026. Trading cards grew nine consecutive quarters. Owns Goldin. Also growing in coins, toys, comics. Best public proof the category is real, because it is reported against a large base.</td><td><span class="dots d3" data-tip="Audited filing. SEC-reported, though collectibles GMV is not split out."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>Collectors / PSA</strong><br><span class="small">private</span></td><td class="num">not disclosed</td><td class="num">+26% vol</td><td>Graded 19.26M cards in 2025. <strong>72% market share</strong>, 76% of sports and 69% of TCG. Roughly 80% after acquiring SGC and Beckett. Effectively a monopoly on trust - and now publishing a public backlog tracker because it cannot keep up with its own demand.</td><td><span class="dots d3" data-tip="Transaction census. PSA publishes graded volume and now a live backlog tracker."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>Funko</strong><br><span class="small">NASDAQ FNKO</span></td><td class="num">USD 908.2M</td><td class="num">declining</td><td>Net loss USD 67.4M. Q4 gross margin slipped to 40.9% from 42.4%. Licensed IP, no owned characters, no scarcity mechanic, no secondary capture.</td><td><span class="dots d3" data-tip="Audited filing. SEC-reported full year results."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>Top Toy</strong><br><span class="small">Miniso spinoff, HKEX filed</span></td><td class="num">RMB 3.59B<br>~USD 525M</td><td class="num">+87.9%</td><td>Filed its HKEX prospectus seeking roughly USD 300M. A July 2026 Series A of USD 59.4M valued it at USD 1.3B, with a Temasek unit putting in USD 40M for 3.2%. Net profit still fell 65.6% and 46%+ of revenue depends on parent Miniso. <strong>The listing is the test</strong> - it prices whether a retailer without owned IP deserves a Pop Mart multiple.</td><td><span class="dots d2" data-tip="Company PR and exchange filing. Prospectus filed, not yet listed."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>Kayou</strong><br><span class="small">private, HK filing lapsed</span></td><td class="num">&gt;RMB 10B [2024]</td><td class="num">+277.8% [2yr]</td><td>China's largest trading card seller. <strong>Status update: the Hong Kong listing application lapsed at the end of July</strong> and CSRC approval never came, so the USD 500M IPO is delayed again. A near-4x in two years off a pre-IPO base was always the kind of number that gets restated. Backed by Hongshan.</td><td><span class="dots d1" data-tip="Research-firm estimate on revenue; exchange record on the lapsed filing."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>StockX / GOAT</strong><br><span class="small">private</span></td><td class="num">~USD 2B GMV ea.</td><td class="num">flat-ish</td><td>With eBay they hold 65%+ of authenticated sneaker transaction value. Growth stalled with the sneaker cycle.</td><td><span class="dots d1" data-tip="Research-firm estimate. Private, no disclosure."><i></i><i></i><i></i></span></td></tr>
+  </tbody></table>
+  </div>
+  </div>
+</details>
+
+<!-- ================= THE STACK ================= -->
+<h2 id="stack">Part 2</h2>
+<div class="h2sub">Where the margin actually sits</div>
+<p class="deck">Five layers between a character being drawn and a stranger paying money for it. Only two of them are worth owning.</p>
+
+<div class="stack">
+  <div class="shd"><div>Layer</div><div>Who holds it</div><div>Margin</div></div>
+  <div class="srow">
+    <div class="layer">IP creation<em>Own the character</em></div>
+    <div class="who"><b>Pokemon Company</b>, <b>Bandai Namco</b>, <b>Pop Mart</b>. Licence-gated, effectively closed to new entrants. Pokemon is not for sale and not licensable at this level.</div>
+    <div class="mbar"><div class="t"><i data-w="90" style="background:var(--hard)"></i></div><div class="v" style="color:var(--hard)">Highest</div></div>
+  </div>
+  <div class="srow">
+    <div class="layer">Manufacture<em>Print and mould it</em></div>
+    <div class="who"><b>Kayou</b>, <b>Funko</b>, contract factories. Capital-heavy, licence-dependent, exposed the moment the IP holder renegotiates. Funko lost USD 67M here in 2025.</div>
+    <div class="mbar"><div class="t"><i data-w="12" style="background:var(--lose)"></i></div><div class="v" style="color:var(--lose)">Thin or negative</div></div>
+  </div>
+  <div class="srow">
+    <div class="layer">Retail<em>Put it on a shelf</em></div>
+    <div class="who"><b>Top Toy</b>, <b>Pop Mart</b> stores, <b>TikTok Shop</b>, general marketplaces. High revenue growth is easy here. Keeping any of it is not - Top Toy nets 2.8%.</div>
+    <div class="mbar"><div class="t"><i data-w="18" style="background:var(--soft)"></i></div><div class="v" style="color:var(--soft)">Thin</div></div>
+  </div>
+  <div class="srow">
+    <div class="layer">Liquidity<em>Match buyer to seller</em></div>
+    <div class="who"><b>eBay</b>, <b>StockX</b>, <b>Mercari</b>, <b>Kick Avenue</b>. Take-rate business, scales well, but competes on fee and needs the layer below it to work at all.</div>
+    <div class="mbar"><div class="t"><i data-w="55" style="background:var(--med)"></i></div><div class="v" style="color:var(--med)">Good</div></div>
+  </div>
+  <div class="srow">
+    <div class="layer">Trust<em>Certify it is real</em></div>
+    <div class="who"><b>PSA</b> at 72% global share. Makes nothing, owns no IP, holds no inventory. In Indonesia this seat is occupied by <b>EGS</b> and <b>ZMG</b>, businesses most collectors outside the hobby have never heard of.</div>
+    <div class="mbar"><div class="t"><i data-w="85" style="background:var(--hard)"></i></div><div class="v" style="color:var(--hard)">Highest</div></div>
+  </div>
+</div>
+
+<div class="call">
+  <span class="t">Read the stack top to bottom and the strategy writes itself</span>
+  <p>The two profitable layers are the two that do not touch inventory. One of them is closed - you cannot buy your way into owning Pokemon. The other one is open, and in Indonesia it is currently held by two-year-old companies running submissions through WhatsApp.</p>
+</div>
+
+<!-- ================= ZOOM ================= -->
+<h2 id="asia">Part 3</h2>
+<div class="h2sub">Zooming in - and watching the data fall apart</div>
+<p class="deck">The further you zoom toward Indonesia, the worse the data gets. That is not a research failure. It is the finding.</p>
+
+<div class="funnel">
+  <div class="frow">
+    <div class="geo">Global<em>art &amp; antiques</em></div>
+    <div><div class="fbar" data-w="100" style="background:var(--forest)">USD 59.6B - annual report, dealer survey + auction data</div></div>
+    <div class="q"><b style="color:var(--hard)">Good</b>Art Basel / UBS</div>
+  </div>
+  <div class="frow">
+    <div class="geo">Asia<em>China trendy toys</em></div>
+    <div><div class="fbar" data-w="62" style="background:var(--moss)">USD 12.2B - state media citing research</div></div>
+    <div class="q"><b style="color:var(--med)">Usable</b>Xinhua, iiMedia</div>
+  </div>
+  <div class="frow">
+    <div class="geo">SEA<em>collectibles</em></div>
+    <div><div class="fbar" data-w="30" style="background:var(--soft)">No size exists - only platform GMV and one filing</div></div>
+    <div class="q"><b style="color:var(--soft)">Inferred</b>Pop Mart filing</div>
+  </div>
+  <div class="frow">
+    <div class="geo">Indonesia<em>collectibles</em></div>
+    <div><div class="fbar" data-w="13" style="background:var(--lose)">Nothing</div></div>
+    <div class="q"><b style="color:var(--lose)">None</b>Does not exist</div>
+  </div>
+</div>
+
+<h3>Asia - where the growth actually is</h3>
+<p>Asia is not a follower market in collectibles. China is the growth engine, Japan is the IP factory and the deepest secondary market, Korea is small but punches through fandom.</p>
+
+<div class="stats">
+  <div class="stat rv"><div class="n">RMB 82.5B</div><div class="l"><b>China trendy toy market, 2025</b><br>~USD 12.2B, +40.5% YoY <span class="dots d2" data-tip="Company PR or serious survey. Xinhua citing research."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n" data-count="8.5" data-pre="$" data-suf="B" data-dec="1">$8.5B</div><div class="l"><b>China art market</b><br>14% of global, 3rd largest, but only +1% <span class="dots d2" data-tip="Company PR or serious survey. Art Basel and UBS."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n">RMB 8.01B</div><div class="l"><b>Pop Mart APAC ex-China</b><br>+157.6% - now bigger than its Americas business <span class="dots d3" data-tip="Audited filing. Pop Mart segment disclosure."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n" data-count="16.8" data-suf="M" data-dec="1">16.8M</div><div class="l"><b>TCG cards graded globally</b><br>overtook sports cards for the first time <span class="dots d3" data-tip="Transaction census across all major authenticators."><i></i><i></i><i></i></span></div></div>
+</div>
+
+<div class="chartbox">
+  <h4>Pop Mart is no longer a China company</h4>
+  <p class="cap">2025 revenue by region, RMB billions. Hover for the growth rate.</p>
+  <div class="chartwrap"><canvas id="chPopMart"></canvas></div>
+  <div class="sowhat"><b>So what:</b> China fell to 56.2% of revenue while growing 134.6%, which only happens when every other region grows faster. APAC ex-China at RMB 8.01B is now the second-largest block and it is the one Indonesia sits inside. Pop Mart does not disclose an Indonesia line, so this is the closest you get to sizing the local demand it has proven.</div>
+</div>
+
+<div class="chartbox">
+  <h4>China trendy toys - where it is going</h4>
+  <p class="cap">RMB billions. 2025 is measured. 2030 is a forecast, so trust the left bar more than the right one.</p>
+  <div class="chartwrap"><canvas id="chChina"></canvas></div>
+  <div class="sowhat"><b>So what:</b> even if the 2030 forecast is half wrong, China's designer toy market is compounding faster than any other collectibles segment anywhere. That is the wave Pop Mart rode into Indonesia.</div>
+</div>
+
+<details>
+  <summary>China, Japan, Korea - the detail and the players</summary>
+  <div class="dbody">
+  <h4>China</h4>
+  <ul>
+    <li><strong>Trendy toys:</strong> RMB 82.5B [~USD 12.2B] in 2025, +40.5%, forecast RMB 213.3B by 2030 <span class="dots d2" data-tip="Company PR or serious survey - on the 2025 base."><i></i><i></i><i></i></span> on the base, <span class="dots d1" data-tip="Research-firm estimate - on the 2030 forecast."><i></i><i></i><i></i></span> on the forecast.</li>
+    <li><strong>Blind box alone:</strong> ~RMB 58B [~USD 8B], the largest single blind-box market on earth <span class="dots d1" data-tip="Research-firm estimate."><i></i><i></i><i></i></span></li>
+    <li><strong>Guzi economy [anime merch - badges, figures, cards, plush]:</strong> RMB 168.9B in 2024, +40.63%, forecast RMB 300B by 2029, per iiMedia <span class="dots d1" data-tip="Research-firm estimate. iiMedia."><i></i><i></i><i></i></span> The trend is real, the decimal place is not.</li>
+    <li><strong>Art:</strong> USD 8.5B, 14% of global, third-largest market. Growth only ~1% - the property downturn is still suppressing collector confidence and Hong Kong is weak on soft international demand.</li>
+  </ul>
+  <div class="tscroll">
+  <table>
+  <thead><tr><th style="width:15%">Player</th><th style="width:16%">Revenue</th><th>Detail</th><th style="width:8%">Conf.</th></tr></thead>
+  <tbody>
+  <tr><td><strong>Pop Mart</strong></td><td class="num">RMB 20.85B China<br>RMB 37.12B total</td><td>China is now only 56.2% of the business and falling as a share. Owns its IP, controls its retail, runs its own overseas stores. The most important company in modern collectibles.</td><td><span class="dots d3" data-tip="Audited filing."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>Kayou</strong></td><td class="num">&gt;RMB 10B [2024]</td><td>China's largest trading card seller - Ultraman, My Little Pony licences. Reported +277.78% to over RMB 10B in 2024 from RMB 4.1B in 2022. HK listing application lapsed end of July 2026 without CSRC approval; the ~USD 500M IPO is delayed for a second time.</td><td><span class="dots d1" data-tip="Research-firm estimate on revenue; exchange record on the lapse."><i></i><i></i><i></i></span></td></tr>
+  <tr><td><strong>Top Toy</strong><br><span class="small">Miniso spinoff</span></td><td class="num">RMB 3.59B<br>~USD 525M</td><td>+87.9% YoY - though Miniso's own filing says +94.8%, and those two do not reconcile. GMV RMB 4.2B. Largest collectible toy retailer in China by GMV. Net profit fell 65.6% to RMB 101M, gross margin only 32.1%, and 46%+ of revenue depends on parent Miniso. HKEX prospectus filed, ~USD 300M target, USD 1.3B valuation set in July 2026.</td><td><span class="dots d2" data-tip="Company PR and exchange filing."><i></i><i></i><i></i></span></td></tr>
+  </tbody></table>
+  </div>
+
+  <h4>Japan</h4>
+  <ul>
+    <li><strong>Bandai Namco:</strong> JPY 1,241.5B [~USD 8.3B] group net sales FY3/2025, +18.2%. Gundam JPY 127.2B, One Piece JPY 69.5B, Dragon Ball JPY 13.4B. Card games not broken out.</li>
+    <li><strong>Mercari:</strong> Japan's dominant C2C marketplace, 4B+ total listings. Cross-border GMV alone now exceeds JPY 90B annually [~USD 580M], up 15x in three years. Launched a dedicated Mercari Japan app in the US in June 2026 pitched specifically on Japanese collectibles, cards and anime goods.</li>
+    <li><strong>PSA Tokyo:</strong> PSA's first full-scale facility outside North America opened in Tokyo in 2022, and it is still the nearest grading operation to Jakarta - roughly 5,700km away. Frankfurt follows in summer 2026, alongside Canada. Southeast Asia is not on the announced map.</li>
+    <li><strong>The structural point:</strong> Japan is the IP factory. Pokemon, Gundam, One Piece, Dragon Ball, Yu-Gi-Oh - almost every object the global grading and resale industry exists to service is Japanese. Japan captures the primary sale and has been slow to capture the secondary margin. Mercari going cross-border is Japan trying to fix that.</li>
+  </ul>
+
+  <h4>Korea</h4>
+  <p>No credible standalone sizing exists. What is observable: K-pop photocard trading is a genuine large-scale secondary market with real price discovery and near-zero formal infrastructure - no dominant grading body, no dominant marketplace, mostly running on X, Bunjang and Danggeun. That is the closest thing in Asia to what sports cards looked like before PSA existed. Worth noting that KREAM, Naver's sneaker resale platform, led the Series A into Indonesia's Kick Avenue - Korean resale capital is already looking south.</p>
+  </div>
+</details>
+
+<!-- ================= SEA ================= -->
+<h2 id="sea">Part 4</h2>
+<div class="h2sub">Southeast Asia</div>
+<p class="deck">The fastest-growing region for the biggest player in the category - and nobody has measured it.</p>
+
+<div class="call warn">
+  <span class="t">There is no reliable SEA collectibles market size. Anywhere.</span>
+  <p>Not from Grand View, not Statista, not Momentum Works. What exists is platform GMV, one company's regional disclosure, and press anecdotes. Everything below is inferred from those three. Anyone who hands you a "SEA collectibles TAM" invented it.</p>
+</div>
+
+<div class="stats">
+  <div class="stat rv"><div class="n" data-count="157.6" data-pre="$" data-suf="B" data-dec="1">$157.6B</div><div class="l"><b>SEA e-commerce GMV, 2025</b><br>+23%, all categories <span class="dots d2" data-tip="Company PR or serious survey. Yicai, compiled platform data."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n" data-count="619" data-pre="+" data-suf="%" data-dec="0">+619%</div><div class="l"><b>Pop Mart SEA growth</b><br>to RMB 2.4B - note this is the <em>2024</em> figure <span class="dots d2" data-tip="Company PR. 2024 figure, still being quoted as current in 2026 press."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n">RMB 10M</div><div class="l"><b>One Bangkok store, one day</b><br>~USD 1.4M in single-day sales <span class="dots d2" data-tip="Company PR or serious survey."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n" data-count="100" data-suf="%" data-dec="0">100%</div><div class="l"><b>Pop Mart SEA stores self-operated</b><br>they ate the capex rather than franchise <span class="dots d2" data-tip="Company PR or serious survey."><i></i><i></i><i></i></span></div></div>
+</div>
+
+<div class="chartbox">
+  <h4>Where SEA shoppers actually are</h4>
+  <p class="cap">Share of combined platform GMV, 2025.</p>
+  <div class="chartwrap"><canvas id="chSEA"></canvas></div>
+  <div class="sowhat"><b>So what:</b> Shopee is bigger but TikTok Shop grew 66% while Lazada fell 28%. For collectibles specifically the growth rate matters more than the size - collectibles sell through unboxing and demonstration, which is native to short video and awkward on a search-driven marketplace.</div>
+</div>
+
+<details>
+  <summary>What is actually known about SEA - the receipts</summary>
+  <div class="dbody">
+  <ul>
+    <li><strong>Pop Mart:</strong> SEA revenue grew 619.1% to RMB 2.4B in FY2024, then nearly half of all overseas revenue. For FY2025 Pop Mart reports APAC ex-China at RMB 8.01B and does not split SEA separately - so the honest statement is "SEA is the bulk of an RMB 8B regional business," not a precise figure. <em>Careful: the 619% and RMB 2.4B numbers are still being quoted in 2026 press as if current. They are 2024.</em></li>
+    <li><strong>Store model:</strong> all Pop Mart SEA stores are self-operated, not franchised - Singapore, Malaysia, Thailand, Indonesia, Vietnam, Philippines. Flagships in Ho Chi Minh City and Bangkok each recorded daily sales above RMB 5M.</li>
+    <li><strong>Localisation is a real lever:</strong> Pop Mart runs market-specific product - an Indonesian Tropical Series, a Louvre series in France. Different SKUs, not translated marketing.</li>
+    <li><strong>Channel:</strong> SEA e-commerce hit USD 157.6B GMV in 2025, +23%. Shopee 59% of platform GMV [+18%], TikTok Shop ~31% [+66%], Lazada collapsed 28% to a 9% share.</li>
+    <li><strong>Labubu specifically:</strong> SEA sales +478% in 2024. Thailand became the cultural epicentre outside China after celebrity adoption.</li>
+  </ul>
+  </div>
+</details>
+
+<h3>What is missing across SEA</h3>
+<p>Every layer of the collectibles stack except retail is thin or absent.</p>
+
+<div class="gaps">
+  <div class="gap"><span class="st">MISSING</span><h5>Regional grading authority</h5><p>PSA holds 72% globally and grades everything in California. Its nearest facility to Jakarta is Tokyo. A SEA collector ships internationally, waits months and pays in USD. Millions of cards, one bottleneck, on the wrong continent.</p></div>
+  <div class="gap"><span class="st">MISSING</span><h5>Price index</h5><p>No SEA equivalent of TCGplayer, Cardmarket or StockX price history. Pricing happens in Facebook groups and WhatsApp threads.</p></div>
+  <div class="gap"><span class="st">MISSING</span><h5>Authenticated marketplace</h5><p>Nothing at scale outside sneakers. Carousell and Shopee are general-purpose and neither authenticates collectibles properly.</p></div>
+  <div class="gap"><span class="st">MISSING</span><h5>Mid-value consignment</h5><p>Nothing serves the USD 100-5,000 band. Too small for Sotheby's, too risky for a Shopee listing. That is where most real collecting happens.</p></div>
+</div>
+
+<!-- ================= INDONESIA ================= -->
+<h2 id="indo">Part 5</h2>
+<div class="h2sub">Indonesia</div>
+<p class="deck">Demand is proven. Infrastructure is early, local and unbranded - which is a different finding from the one this report started with.</p>
+
+<div class="call new">
+  <span class="t"><span class="flag fix">CORRECTED</span>Indonesia does have card grading. The first version of this report said it had none.</span>
+  <p>At least two Indonesian labs are operating and taking submissions today. <b>Emporium Grading Service [EGS]</b> calls itself the pioneer of Indonesian grading and runs QR-verified slabs, anti-counterfeit holograms, its own cert database, free subgrades and a defect report. It exhibits at Indonesia Card Party and runs a WhatsApp collector community. <b>ZMG [Zard Mafia Grading]</b> grades Pokemon, One Piece and Magic at roughly <b>Rp200,000 per card</b>.</p>
+  <p>This changes the shape of the opportunity, not the direction of it. The trust layer is not empty. It is being built right now by small local operators, which is exactly what the market looks like immediately before it consolidates - and it means the entry window is narrower than a "zero infrastructure" slide would tell you.</p>
+</div>
+
+<div class="stats">
+  <div class="stat rv"><div class="n">10-12</div><div class="l"><b>Pop Mart stores in Indonesia</b><br>plus 3 Roboshop machines; counts disagree <span class="dots d1" data-tip="Research-firm estimate. Pop Mart does not publish an Indonesia count and press tallies conflict."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n" data-count="13.1" data-pre="$" data-suf="B" data-dec="1">$13.1B</div><div class="l"><b>TikTok Shop Indonesia GMV, 2025</b><br>largest in SEA, 2nd globally, +66% <span class="dots d2" data-tip="Company PR or serious survey. Compiled platform data."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n">6 yrs</div><div class="l"><b>Bahasa Pokemon cards shipping</b><br>via AKG Games, a Salim Group entity <span class="dots d3" data-tip="Verifiable from the official Pokemon Indonesia trainer site and AKG's own release cadence."><i></i><i></i><i></i></span></div></div>
+  <div class="stat rv"><div class="n" data-count="2" data-suf="+" data-dec="0">2+</div><div class="l"><b>Indonesian grading labs operating</b><br>EGS and ZMG, both taking submissions <span class="dots d2" data-tip="Company PR. Live public price lists, submission forms and event presence, August 2026."><i></i><i></i><i></i></span></div></div>
+</div>
+
+<h3>What an Indonesian collector actually pays to grade a card</h3>
+<p>This is the number the whole Indonesian thesis turns on, and it had never been put in one place. Nimitz Cards runs the main PSA submission route out of Jakarta, with drop-off points in Mal Artha Gading and BSD City and shipments to PSA every one to two weeks.</p>
+
+<div class="chartbox">
+  <h4>The grading cost ladder, Indonesia, August 2026</h4>
+  <p class="cap">Rupiah millions per card. Green is graded locally. Amber and red are PSA, routed through a Jakarta broker.</p>
+  <div class="chartwrap xtall"><canvas id="chCost"></canvas></div>
+  <div class="sowhat"><b>So what:</b> the cheapest PSA route costs roughly <b>7.5x</b> a local grade, and that is at 50-card bulk pricing. For a single card it is nearly 10x. PSA's own US list price for the equivalent Regular tier is about USD 75, so an Indonesian collector paying Rp1,950,000 is paying roughly a 45% premium on top of the fee before shipping - and the Indonesia to USA legs are not insured at all.</div>
+</div>
+
+<div class="call warn">
+  <span class="t">And the tier that would serve mid-value cards is closed</span>
+  <p>PSA's four Value tiers - the cheap, slow, high-volume levels that exist precisely for cards worth under USD 500 - were <b>paused worldwide on 2 June 2026</b> and are still paused. Nimitz lists all four as "PSA sedang menutup service ini sampai pemberitahuan berikutnya."</p>
+  <p>So the honest version of the Indonesian pricing problem is not "grading is expensive here." It is that <b>the only affordable global tier has been switched off</b>, leaving a floor of Rp1.5M per card for anyone who wants a PSA slab. Everything below that price point has nowhere to go except a local lab.</p>
+</div>
+
+<h3>The reason the floor moved: PSA is out of throughput</h3>
+
+<div class="tl">
+  <div class="titem"><div class="d">April 2025</div><div class="b">US import tariffs disrupt PSA's inbound international flow.</div></div>
+  <div class="titem"><div class="d">October 2025</div><div class="b">PSA opens a Hong Kong office and requires all non-US submissions to route through it. Grading still happens in California. Indonesian submissions now travel Jakarta to Hong Kong to California and back, with no tracking on the internal legs.</div></div>
+  <div class="titem"><div class="d">26 February 2026</div><div class="b">Direct-to-USA shipping resumes. Nimitz publicly apologises to customers for a backlog that ran roughly four months.</div></div>
+  <div class="titem hot"><div class="d">2 June 2026</div><div class="b">A 20% spike in submissions pushes PSA's backlog toward 10 million cards. PSA pauses Value Bulk, Value, Value Plus and Value Max to new submissions, extends Collectors Club memberships, and launches a public backlog tracker.</div></div>
+  <div class="titem hot"><div class="d">28 July 2026</div><div class="b">The backlog is <b>12.4 million units and rising</b>, up from 11 million two weeks earlier. The stated target was to cut it to 5 million. It has moved the other way.</div></div>
+</div>
+
+<div class="chartbox">
+  <h4>PSA's backlog, 2026</h4>
+  <p class="cap">Active backlog in millions of units, from PSA's own public tracker. The dashed line is PSA's stated target.</p>
+  <div class="chartwrap"><canvas id="chBacklog"></canvas></div>
+  <div class="sowhat"><b>So what:</b> this is the most important operational fact in the category right now. A 72%-share monopoly on trust has publicly admitted it cannot absorb its own demand, has closed the tiers that serve ordinary collectors, and is watching the queue grow anyway. Monopolies do not usually hand competitors a window. This one just did.</div>
+</div>
+
+<h3>Demand versus infrastructure, scored</h3>
+
+<div class="score">
+  <div class="scol d">
+    <div class="h">Demand - proven</div>
+    <div class="sitem"><span class="m">&#10003;</span><div><b>Pop Mart</b> runs 10 to 12 self-operated stores plus 3 Roboshop machines, and ate the capex rather than franchise.</div></div>
+    <div class="sitem"><span class="m">&#10003;</span><div><b>Salim Group</b> has shipped tournament-legal Bahasa Indonesia Pokemon cards through AKG Games since 2020, with a live release cadence and a championship series.</div></div>
+    <div class="sitem"><span class="m">&#10003;</span><div><b>TikTok Shop</b> moved USD 13.1B, +66%, the largest in SEA and second largest globally. The rail exists.</div></div>
+    <div class="sitem"><span class="m">&#10003;</span><div><b>Indonesia Card Party</b> ran its first edition in May 2026 at Pondok Indah Mall 3 with thousands of visitors and hundreds of community booths. A second edition follows in October 2026.</div></div>
+    <div class="sitem"><span class="m">&#10003;</span><div><b>Collectors already pay</b> Rp1.5M to Rp11.5M per card to send cards abroad. Willingness to pay for certification is not hypothetical.</div></div>
+  </div>
+  <div class="scol i">
+    <div class="h">Infrastructure - thin</div>
+    <div class="sitem"><span class="m">!</span><div><b>Grading exists but is unaccredited.</b> EGS and ZMG operate, but no Indonesian slab carries international resale recognition. A local grade does not travel.</div></div>
+    <div class="sitem"><span class="m">&#10005;</span><div><b>No price index.</b> One community-run tracker for a country of 280 million. Pricing happens in Facebook groups and WhatsApp.</div></div>
+    <div class="sitem"><span class="m">&#10005;</span><div><b>No authenticated marketplace</b> beyond Kick Avenue's sneaker-first model. Cards, figures and watches under USD 5,000 have no trusted intermediary.</div></div>
+    <div class="sitem"><span class="m">&#10005;</span><div><b>No escrow or recourse.</b> Transactions run on COD meetups and DMs. Fakes are common and there is no route to a refund.</div></div>
+    <div class="sitem"><span class="m">!</span><div><b>Currency exposure sits on the collector.</b> Broker pricing floats with USD/IDR and is revised upward as the rupiah weakens. The international route gets more expensive on its own.</div></div>
+  </div>
+</div>
+
+<h3>Evidence that demand is real</h3>
+<div class="tscroll">
+<table>
+<thead><tr><th style="width:17%">Player</th><th style="width:13%">Category</th><th>What is verifiable</th><th style="width:8%">Conf.</th></tr></thead>
+<tbody>
+<tr><td><strong>Pop Mart Indonesia</strong></td><td>Designer toys</td><td>Self-operated stores in Jakarta [Central Park, Grand Indonesia, Kelapa Gading, Senayan City], Bali [Beachwalk Kuta, June 2025], Bandung [23 Paskal, 210 sqm, August 2025], Semarang and Makassar [Trans Studio Mall], with Mall Puri announced for August 2026. <strong>Count is contested</strong> - an Indonesian tracker put it at 10 stores plus 3 Roboshops as of March 2026, while press reporting has cited 12+. Pop Mart does not disclose an Indonesia figure; it sits inside APAC ex-China RMB 8.01B. Runs an Indonesia-specific Tropical Series.</td><td><span class="dots d1" data-tip="Research-firm estimate. Store count contested across sources."><i></i><i></i><i></i></span></td></tr>
+<tr><td><strong>AKG Games</strong><br><span class="small">Salim Group</span></td><td>Trading cards</td><td>Sole licence holder for Pokemon TCG Indonesia. Publishes Bahasa Indonesia cards that are tournament-legal worldwide. Active cadence: Festival Terastal ex [Jan 2025], Kobaran Biru [Dec 2025], Evolusi Mega Impian ex [Jan 2026], Deck Taktik Seri Mega [Jul 2026]. Runs a championship series. <strong>The most underrated fact about Indonesian collectibles</strong> - a Salim entity has been building organised Pokemon play here for years.</td><td><span class="dots d3" data-tip="Verifiable from the official Pokemon Indonesia trainer site and release records."><i></i><i></i><i></i></span></td></tr>
+<tr><td><strong>Nimitz Cards</strong></td><td>Grading route</td><td>The main PSA submission broker out of Indonesia. Two physical locations [Mal Artha Gading, Jakarta Utara and West Park, BSD City], shipments to PSA every 1-2 weeks, customer dashboard with 11 tracked status stages, published IDR price ladder from Rp550k reholder to Rp11.5M walk-through. <strong>Its existence is the proof that Indonesian submission volume is real</strong> - nobody runs two storefronts and a fortnightly international shipment for a handful of cards.</td><td><span class="dots d2" data-tip="Company PR. Public price list and operating disclosures, August 2026."><i></i><i></i><i></i></span></td></tr>
+<tr><td><strong>EGS &amp; ZMG</strong><br><span class="small">local graders</span></td><td>Grading</td><td>Emporium Grading Service positions as the pioneer of Indonesian grading: QR-verified certs, anti-counterfeit holograms, waterproof slabs, free subgrades, defect reports, three slab formats, an active submission form and a WhatsApp community. Exhibits at Indonesia Card Party 2026 and Vault Verse. ZMG grades Pokemon, One Piece and Magic at ~Rp200,000 per card. <strong>Neither has international resale recognition</strong> - that is the gap, and it is also the barrier.</td><td><span class="dots d2" data-tip="Company PR. Live sites, price lists and event presence, August 2026."><i></i><i></i><i></i></span></td></tr>
+<tr><td><strong>Kick Avenue</strong></td><td>Sneakers, luxury</td><td>Founded 2017. Raised IDR 43.3B [~USD 2.9M] Series A in January 2023, led by <strong>KREAM</strong> - Naver's Korean resale platform - with Malaysia's SneakersLAH and Mulia Sky Capital. Positions as Indonesia's largest authentic collectibles marketplace across sneakers, streetwear, bags and watches. Runs an offline store, Hypequarters. Third-party trackers estimate ~USD 7M revenue for 2026, which is an aggregator guess, not a disclosure.</td><td><span class="dots d1" data-tip="Research-firm estimate on revenue; funding round is documented."><i></i><i></i><i></i></span></td></tr>
+<tr><td><strong>TikTok Shop / Tokopedia</strong></td><td>Distribution</td><td>USD 13.1B GMV in 2025, +66%, ~31% of combined platform GMV. Indonesia is TikTok Shop's largest SEA market and second-largest globally. Hobby segments including collectibles flagged as high-engagement. This is the rail, full stop.</td><td><span class="dots d2" data-tip="Company PR or serious survey. Compiled platform data."><i></i><i></i><i></i></span></td></tr>
+<tr><td><strong>Larasati, Sidharta</strong></td><td>Art auction</td><td>Larasati operates Jakarta, Bali, Yogyakarta, Singapore, Hong Kong, Malaysia, UK. Sidharta founded 2005, focused on Indonesian modern and contemporary art. Both long-running, both small, neither publishes annual totals.</td><td><span class="dots d1" data-tip="Research-firm estimate. No published totals."><i></i><i></i><i></i></span></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Evidence that infrastructure is still absent</h3>
+<div class="gaps">
+  <div class="gap"><span class="st part">PARTIAL</span><h5>Grading presence</h5><p>Two local labs now operate, but neither slab carries recognition outside Indonesia. For anything a collector expects to resell internationally the route is still Jakarta to California, at Rp1.5M and up, with the cheap tiers closed and the transit legs uninsured.</p></div>
+  <div class="gap"><span class="st">ZERO</span><h5>Price discovery</h5><p>One community-run site tracking Indonesian Pokemon prices. That is the entire infrastructure for a country of 280 million. Everything else is Facebook group asking prices and TikTok anecdote.</p></div>
+  <div class="gap"><span class="st">ZERO</span><h5>Mid-value authentication</h5><p>Nothing outside Kick Avenue's sneaker-first model. Cards, figures and watches under USD 5,000 have no trusted intermediary that both sides of a trade will accept.</p></div>
+  <div class="gap"><span class="st">THE REAL CONSTRAINT</span><h5>Trust, not demand</h5><p>Transactions run on Facebook groups, WhatsApp, Instagram DMs and COD meetups. Fakes are common, recourse is nonexistent. Demand is clearly there. What is absent is the machinery that lets a stranger transact with a stranger at USD 200 without fear.</p></div>
+</div>
+
+<!-- ================= THE WINDOW ================= -->
+<h2 id="window">Part 6</h2>
+<div class="h2sub">The window, and how long it stays open</div>
+<p class="deck">Three clocks are running at once. They do not run at the same speed.</p>
+
+<div class="gaps">
+  <div class="gap"><span class="st part">CLOCK 1</span><h5>PSA's backlog</h5><p>Open now, closes on recovery. Every month the Value tiers stay paused is a month the sub-USD 500 card has no global home. When PSA reopens them the cheapest global option returns and the local price advantage narrows. Watch the backlog tracker, not the press release.</p></div>
+  <div class="gap"><span class="st part">CLOCK 2</span><h5>Local graders getting credible</h5><p>EGS already has the operational pieces - certs, holograms, database, community, event presence. What it lacks is recognition. The moment an Indonesian slab is accepted at resale, the trust seat is taken and it is not coming back.</p></div>
+  <div class="gap"><span class="st part">CLOCK 3</span><h5>Adjacent incumbents noticing</h5><p>Kick Avenue already authenticates sneakers, already has KREAM money, already runs a physical store. Adding cards is a product decision, not a company. Pop Mart passing ~25 Indonesian stores takes the premium shelf and the mindshare.</p></div>
+  <div class="gap"><span class="st has">THE ASYMMETRY</span><h5>What nobody is building</h5><p>Not grading. Price discovery. Every one of these players benefits from a credible Indonesian price index and none of them is incentivised to build one - graders want submissions, marketplaces want spread, brands want scarcity. The measurement layer is the only seat with no natural owner.</p></div>
+</div>
+
+<!-- ================= VERDICT ================= -->
+<h2 id="verdict">Part 7</h2>
+<div class="h2sub">If you build here</div>
+<p class="deck">Separating what the data supports from what would just be a comfortable business.</p>
+
+<div class="paths">
+  <div class="path a">
+    <div class="lbl">The comfortable path</div>
+    <h5>Open a collectibles retail or curated marketplace business</h5>
+    <p>Looks ambitious. Genuinely hard work. Visible, fundable, easy to explain to people.</p>
+    <p>It also lands you exactly in Top Toy's economics: strong revenue growth, sub-3% net margin, dependent on IP you do not own, and structurally exposed the moment Pop Mart opens the next store down the road. Top Toy's own HKEX listing will price that trade-off in public, and it is not a flattering comparison to sit next to.</p>
+    <div class="out">Retail without owned IP is a job, not an asset.</div>
+  </div>
+  <div class="path b">
+    <div class="lbl">What the data actually points at</div>
+    <h5>Own measurement, then trust</h5>
+    <p>Price discovery first, authentication and escrowed settlement second. Boring, unsexy, capital-light relative to retail, and the only layer with no natural owner among the incumbents.</p>
+    <p>Straight grading is the obvious move and it is already two players deep locally. The seat that is genuinely unclaimed is the index - the thing that tells an Indonesian buyer what a card is actually worth before either side agrees a price. PSA became PSA because it owned the grade <em>and</em> the population report. Everyone here is copying the first half.</p>
+    <div class="out">Whoever owns the price owns the category.</div>
+  </div>
+</div>
+
+<div class="call warn">
+  <span class="t">The counter-argument you should make me defend</span>
+  <p>Grading only works at scale, scale needs volume, and Indonesian collectors may simply not hold enough high-value cards to justify certifying them. The updated version of that objection is sharper: local grading already exists at Rp200,000 and has not obviously consolidated the market, which suggests either the volume is not there or a local slab does not carry enough value to change a transaction.</p>
+  <p>If that is true, the market is too shallow, and the right move is either to sit it out or start with the index and authentication-as-a-service on higher-ticket items - sneakers, watches, bags - where Kick Avenue has already proven willingness to pay. That question is answerable before spending anything: ask Nimitz what its monthly submission volume looks like, ask EGS how many certs are in its database, and check what share of Indonesian card listings clear above Rp1M.</p>
+</div>
+
+<div class="kill">
+  <div class="khd">What would change the picture</div>
+  <div class="krow"><span class="tag k">KILLS IT</span><div>Indonesian collectible transaction values cluster below Rp500k. At that level nobody pays for certification and the unit economics never close.</div></div>
+  <div class="krow"><span class="tag k">KILLS IT</span><div>EGS cert volume turns out to be trivial. Two labs existing proves someone tried, not that the market cleared.</div></div>
+  <div class="krow"><span class="tag k">KILLS RETAIL</span><div>Pop Mart passes ~25 Indonesian stores with sustained same-store sales. They will have taken the premium shelf and the mindshare.</div></div>
+  <div class="krow"><span class="tag c">CONFIRMS IT</span><div>Nimitz submission volume is material and growing. It proves Indonesians already pay international prices for certification they could get locally.</div></div>
+  <div class="krow"><span class="tag c">CONFIRMS IT</span><div>PSA's backlog stays above 10 million into 2027 with Value tiers still paused. The global floor stays high and the local alternative stays viable.</div></div>
+  <div class="krow"><span class="tag w">WINDOW CLOSING</span><div>Kick Avenue expands into card authentication, or an Indonesian slab starts clearing at resale. Either proves the demand and means someone else got there first.</div></div>
+  <div class="krow"><span class="tag w">WILDCARD</span><div>Top Toy lists on HKEX. It puts a public multiple on a no-owned-IP collectibles retailer, which is the single best read on whether the comfortable path is worth anything.</div></div>
+  <div class="krow"><span class="tag w">WILDCARD</span><div>Kayou's IPO finally lands - the HK application lapsed in July 2026 without CSRC approval. A listing would pull regional capital toward the category.</div></div>
+</div>
+
+<footer>
+<details>
+<summary>What changed in revision 2</summary>
+<div class="dbody">
+<ul>
+<li><strong>Corrected:</strong> "zero grading labs in Indonesia" was wrong. EGS and ZMG are both operating. The verdict shifted from "claim the empty trust layer" to "claim the index, because the grade is already contested."</li>
+<li><strong>Added:</strong> the full Indonesian grading cost ladder in rupiah, from Rp200k local to Rp11.5M PSA walk-through, sourced from live public price lists.</li>
+<li><strong>Added:</strong> PSA's 2026 capacity crisis - the Hong Kong routing detour, the 2 June Value tier pause, and the backlog running from 10M to 12.4M.</li>
+<li><strong>Added:</strong> Indonesia Card Party as community-scale evidence, Nimitz Cards as proof of submission volume, and KREAM's Korean money behind Kick Avenue.</li>
+<li><strong>Updated:</strong> Kayou's HK filing lapsed in July 2026. Top Toy filed its prospectus at a USD 1.3B valuation with Temasek participating.</li>
+<li><strong>Softened:</strong> Pop Mart's Indonesian store count, from "12+" to a contested 10-12 plus 3 Roboshops, because sources disagree and Pop Mart publishes nothing.</li>
+</ul>
+</div>
+</details>
+<details>
+<summary>Sources</summary>
+<div class="dbody">
+<ul>
+<li>Grand View Research - <a href="https://www.grandviewresearch.com/industry-analysis/collectibles-market-report">Collectibles Market Size, Growth Report 2026-2033</a> &middot; Market Decipher via PR Newswire - <a href="https://www.prnewswire.com/news-releases/collectibles-market-size-to-jump-at-6-4-cagr-reaching-602-4-billion-market-size-in-2026-market-decipher-302715918.html">Collectibles Market Size 2026</a></li>
+<li>Art Basel &amp; UBS - <a href="https://www.artbasel.com/stories/the-art-basel-and-ubs-global-art-market-report-2026?lang=en">Global Art Market Report 2026</a></li>
+<li>Antiques Trade Gazette - <a href="https://www.antiquestradegazette.com/news/2025/auction-houses-christie-s-and-sotheby-s-reveal-totals-for-2025/">Christie's and Sotheby's 2025 totals</a> &middot; SCMP - <a href="https://www.scmp.com/lifestyle/arts/article/3337313/big-3-auction-houses-report-uptick-2025-revenue-asia-still-lagging">Big 3 auction houses 2025</a></li>
+<li>cllct - <a href="https://www.cllct.com/sports-collectibles/sports-cards/major-authenticators-graded-more-than-26-million-cards-in-2025">26 million cards graded in 2025</a></li>
+<li>Circana - <a href="https://www.circana.com/post/global-toy-industry-rebounds-in-2025-as-sales-rise-7-fueled-by-pop-culture-collectibles-and-kidu">Global toy industry rebounds in 2025</a></li>
+<li><strong>PSA capacity</strong> - <a href="https://www.psacard.com/articles/articleview/15210/service-level-update-may-2026">Service level update: PSA pauses Value tiers, May 2026</a> &middot; <a href="https://www.psacard.com/info/backlog-tracker">PSA Backlog Tracker</a> &middot; The Athletic - <a href="https://www.nytimes.com/athletic/7315517/2026/05/28/psa-grading-pause-tiers/">PSA partially halting submissions amid 10 million card backlog</a></li>
+<li><strong>PSA international</strong> - <a href="https://www.psacard.com/info/psa-expanding-into-european-and-canadian-markets">PSA expanding into European and Canadian markets</a> &middot; The Athletic - <a href="https://www.nytimes.com/athletic/7350077/2026/06/11/psa-europe-grading-center/">PSA opening European grading center</a></li>
+<li><strong>Indonesia grading route</strong> - Nimitz Cards - <a href="https://nimitzcards.com/pages/psa">PSA submission price list</a> &middot; <a href="https://nimitzcards.com/pages/pengumuman-tentang-situasi-psa-submission-oktober-2025-februari-2026">PSA submission situation, October 2025 to February 2026</a></li>
+<li><strong>Indonesian graders</strong> - <a href="https://emporiumgrading.com/">Emporium Grading Service</a> &middot; <a href="https://www.instagram.com/egs.grading/">EGS on Instagram</a> &middot; ZMG pricing via community posts</li>
+<li><strong>Indonesian community</strong> - <a href="https://www.kaorinusantara.or.id/newsline/243703/indonesia-card-party-2026-pesta-kartu-terbesar-di-jakarta-siap-digelar-akhir-pekan-ini">Indonesia Card Party 2026, Pondok Indah Mall 3</a></li>
+<li>Guangming - <a href="https://en.gmw.cn/2026-03/27/content_38675346.htm">Pop Mart 2025 revenue tops 37 billion yuan</a> &middot; China Daily - <a href="https://www.chinadaily.com.cn/a/202604/09/WS69d70204a310d6866eb42647.html">Pop Mart posts revenue, profit jump</a></li>
+<li>Sportico - <a href="https://www.sportico.com/business/finance/2025/fanatics-2024-sales-rise-1234824898/">Fanatics revenue hits $8.1B</a> &middot; CNBC - <a href="https://www.cnbc.com/2026/05/22/how-fanatics-cornered-the-sports-collectibles-market.html">How Fanatics cornered the sports collectibles market</a></li>
+<li>Bandai Namco IR - <a href="https://www.bandainamco.co.jp/en/ir/library/assets/pdf/2025/factbook2025_en.pdf">Fact Book 2025</a> &middot; Funko IR - <a href="https://investor.funko.com/news-and-events/press-releases/Press-Releases/2026/Funko-Reports-2025-Fourth-Quarter-Full-Year-Financial-Results-Provides-Full-Year-Outlook-for-2026/default.aspx">2025 full-year results</a></li>
+<li>Digital Commerce 360 - <a href="https://www.digitalcommerce360.com/article/ebay-sales/">eBay Q1 2026 GMV</a> &middot; Sportico - <a href="https://www.sportico.com/business/commerce/2025/ebay-sports-cards-growth-1234850708/">Sports cards lead eBay growth</a></li>
+<li>Xinhua - <a href="https://english.news.cn/20260720/bc5b91454af84c17b8a9302549f99077/c.html">China's trendy toy market</a> &middot; Global Times - <a href="https://www.globaltimes.cn/page/202511/1348625.shtml">Blind boxes as growth drivers</a> &middot; <a href="https://www.globaltimes.cn/page/202505/1334456.shtml">Guzi economy</a></li>
+<li>Reuters - <a href="https://www.reuters.com/markets/deals/chinese-trading-card-firm-kayou-plans-500-million-hong-kong-ipo-sources-say-2025-02-21/">Kayou plans $500M Hong Kong IPO</a> &middot; Bloomberg Law - <a href="https://news.bloomberglaw.com/mergers-and-acquisitions/chinese-trading-card-maker-kayou-is-said-to-delay-hk-ipo-plans">Kayou delays HK IPO, listing application lapsed</a></li>
+<li>Reuters - <a href="https://www.reuters.com/markets/europe/miniso-plans-spin-off-top-toy-business-list-it-hong-kong-2025-09-26/">Miniso to spin off Top Toy</a> &middot; KrAsia - <a href="https://kr-asia.com/top-toys-hong-kong-ipo-puts-its-ip-strategy-to-the-test">Top Toy's Hong Kong IPO</a> &middot; Benzinga - <a href="https://www.benzinga.com/Opinion/25/10/48120672/china-pop-toy-market-is-no-childs-play-miniso-spinoff-top-toy-files-for-hong-kong-listing">Top Toy files, Temasek participates</a></li>
+<li>PR Newswire - <a href="https://www.prnewswire.com/news-releases/mercari-japan-launches-new-app-in-the-us-expanding-mercaris-existing-marketplace-ecosystem-302803757.html">Mercari Japan launches US app</a></li>
+<li>KrAsia - <a href="https://kr-asia.com/southeast-asia-is-the-next-playground-for-trendy-toys-and-brands-are-cashing-in">SEA is the next playground for trendy toys</a> &middot; Yicai - <a href="https://www.yicaiglobal.com/news/se-asias-e-commerce-sites-see-gmv-jump-23-to-over-usd1576-billion-in-2025-report-says">SEA e-commerce GMV 2025</a> &middot; Cube - <a href="https://cube.asia/shopee-lazada-and-tiktok-shop-in-southeast-asia-what-the-data-shows-in-2026/">Shopee, Lazada, TikTok Shop data</a></li>
+<li>Campaign Indonesia - <a href="https://www.campaignindonesia.id/en/article/strategi-pop-mart-membangun-merek-dan-budaya-koleksi-di-indonesia/1965411">Pop Mart's strategy in Indonesia</a> &middot; Marketing-Interactive - <a href="https://www.marketing-interactive.com/pop-mart-expands-to-bandung-with-new-immersive-store-experience">Pop Mart expands to Bandung</a></li>
+<li>AKG Games - <a href="https://akggames.com/en/akg-games-officially-launch-pokemon-trading-card-game-in-indonesia/">Pokemon TCG Indonesia launch</a> &middot; <a href="https://asia.pokemon-card.com/id/">Situs Web Pelatih Indonesia</a></li>
+<li>Kick Avenue - <a href="https://www.kickavenue.com/">company site</a> &middot; AsiaTechDaily - <a href="https://asiatechdaily.com/indonesian-sneaker-marketplace-kick-avenue-raises-2-9m-funding/">Kick Avenue raises $2.9M led by KREAM</a></li>
+<li>Magpie IQ - <a href="https://magpieiq.com/insights/tiktok-shop-indonesia-2026/">TikTok Shop Indonesia 2026</a> &middot; Indonesia Tatler - <a href="https://www.indonesiatatler.com/arts-culture/arts/6-prominent-auction-houses-in-indonesia">Auction houses in Indonesia</a></li>
+</ul>
+<p style="margin-top:12px">Currency conversions use approximate 2026 rates [USD 1 = RMB 7.25 = JPY 150 = IDR 17,800]. Where a source reported both local and USD figures, the source's own conversion is retained. Rupiah grading prices float with the exchange rate and are revised upward by brokers as the rupiah weakens, so treat them as an August 2026 snapshot.</p>
+</div>
+</details>
+</footer>
+
+</div>
+
+<button id="top-btn" aria-label="Back to top">&uarr;</button>
+
+<script>
+const F='#4E6128',M='#76923C',L='#7E9C40',S='#C0562B',G='#B98B00',R='#B33A3A',HD='#2E7D32';
+Chart.defaults.font.family='Proxima Nova, Arial, Helvetica, sans-serif';
+Chart.defaults.color='#5F6B52';
+Chart.defaults.font.size=12;
+Chart.defaults.plugins.tooltip.backgroundColor='#1E2418';
+Chart.defaults.plugins.tooltip.padding=10;
+Chart.defaults.plugins.tooltip.cornerRadius=6;
+Chart.defaults.plugins.tooltip.titleFont={weight:'700',size:12.5};
+Chart.defaults.plugins.tooltip.bodyFont={size:12.5};
+
+/* charts build lazily so the entry animation is visible */
+const built={};
+function build(id,fn){if(built[id])return;built[id]=1;fn();}
+
+const chartDefs={
+ chGlobal:()=>new Chart(document.getElementById('chGlobal'),{
+  type:'bar',
+  data:{
+   labels:['Art & antiques','Sneaker resale','Watch resale [high est.]','Watch resale [low est.]','Auction houses [Big 3]','Trading cards [primary]','Anime & action figures'],
+   datasets:[{data:[59.6,18.3,32.3,16.7,14.1,7.8,7.3],
+    backgroundColor:[G,S,S,S,G,S,S],borderRadius:4,barPercentage:.72}]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'USD '+c.parsed.x+' billion'}}},
+   scales:{x:{grid:{color:'#EEF2E4'},ticks:{callback:v=>'$'+v+'B'}},y:{grid:{display:false}}}}
+ }),
+
+ chGrowth:()=>new Chart(document.getElementById('chGrowth'),{
+  type:'bar',
+  data:{
+   labels:['Pop Mart revenue','TikTok Shop Indonesia GMV','China guzi / anime merch','China trendy toys','Card grading volume','Collectible toys segment','SEA e-commerce, all cats','Global art & antiques','China art market'],
+   datasets:[{data:[184.7,66,40.6,40.5,32,32,23,4,1],
+    backgroundColor:[HD,HD,HD,HD,HD,HD,M,G,G],borderRadius:4,barPercentage:.74}]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{display:false},tooltip:{callbacks:{
+     label:c=>'+'+c.parsed.x+'% year on year',
+     afterLabel:c=>c.dataIndex<=5?'Secondary market or IP-owning':'Primary sale or creation'}}},
+   scales:{x:{grid:{color:'#EEF2E4'},ticks:{callback:v=>'+'+v+'%'}},y:{grid:{display:false}}}}
+ }),
+
+ chMargin:()=>new Chart(document.getElementById('chMargin'),{
+  type:'bar',
+  data:{labels:[['Pop Mart','[owns its IP]'],['Top Toy','[retails others]'],['Funko','[licenses all]']],
+   datasets:[{data:[35,2.8,-7.4],backgroundColor:[HD,G,R],borderRadius:5,barThickness:86}]},
+  options:{responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+'% net margin, 2025'}}},
+   scales:{y:{grid:{color:'#EEF2E4'},ticks:{callback:v=>v+'%'},title:{display:true,text:'Net margin, 2025'}},
+     x:{grid:{display:false}}}}
+ }),
+
+ chPlayers:()=>new Chart(document.getElementById('chPlayers'),{
+  type:'bar',
+  data:{
+   labels:['Bandai Namco [group]','Sotheby’s [sales]','Christie’s [sales]','Pokemon TCG [est.]','Pop Mart','Fanatics Collect. [est.]','Funko','Top Toy'],
+   datasets:[{data:[8.3,7.0,6.2,5.4,5.1,5.0,0.91,0.53],
+    backgroundColor:[F,G,G,S,F,S,F,M],borderRadius:4,barPercentage:.72}]
+  },
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'USD '+c.parsed.x+' billion'}}},
+   scales:{x:{grid:{color:'#EEF2E4'},ticks:{callback:v=>'$'+v+'B'}},y:{grid:{display:false}}}}
+ }),
+
+ chPopMart:()=>{
+  const growth=['+134.6%','+157.6%','+748.4%','+506.3%'];
+  return new Chart(document.getElementById('chPopMart'),{
+   type:'bar',
+   data:{labels:['China','APAC ex-China','Americas','Europe'],
+    datasets:[{data:[20.85,8.01,6.81,1.45],backgroundColor:[F,M,L,'#C8D6A8'],borderRadius:5,barPercentage:.68}]},
+   options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{
+      label:c=>'RMB '+c.parsed.y+'B',
+      afterLabel:c=>'Growth '+growth[c.dataIndex]}}},
+    scales:{y:{grid:{color:'#EEF2E4'},ticks:{callback:v=>v+'B'},title:{display:true,text:'RMB billions, 2025'}},
+      x:{grid:{display:false}}}}
+  });
+ },
+
+ chChina:()=>new Chart(document.getElementById('chChina'),{
+  type:'bar',
+  data:{labels:['2025 [measured]','2030 [forecast]'],
+   datasets:[{data:[82.5,213.3],backgroundColor:[F,'#C8D6A8'],borderRadius:5,barThickness:96}]},
+  options:{responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'RMB '+c.parsed.y+' billion'}}},
+   scales:{y:{grid:{color:'#EEF2E4'},ticks:{callback:v=>v+'B'},title:{display:true,text:'RMB billions'}},x:{grid:{display:false}}}}
+ }),
+
+ chSEA:()=>new Chart(document.getElementById('chSEA'),{
+  type:'doughnut',
+  data:{labels:['Shopee 59%  [+18%]','TikTok Shop ~31%  [+66%]','Lazada 9%  [-28%]'],
+   datasets:[{data:[59,31,9],backgroundColor:[F,M,'#D9C4B4'],borderColor:'#fff',borderWidth:3}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+   plugins:{legend:{position:'right',labels:{boxWidth:11,padding:16,font:{size:13}}}}}
+ }),
+
+ chCost:()=>{
+  const usd=['~$11','~$84','~$110','~$169','~$379','~$646'];
+  return new Chart(document.getElementById('chCost'),{
+   type:'bar',
+   data:{labels:[
+     'Local grade [ZMG]',
+     'PSA Regular, 50+ cards',
+     'PSA Regular, single card',
+     'PSA Express',
+     'PSA Super Express',
+     'PSA Walk-Through'],
+    datasets:[{data:[0.2,1.5,1.95,3.0,6.75,11.5],
+     backgroundColor:[HD,G,G,S,S,R],borderRadius:4,barPercentage:.72}]},
+   options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{
+      label:c=>'Rp '+c.parsed.x.toFixed(2)+' million per card',
+      afterLabel:c=>'Roughly '+usd[c.dataIndex]+' at IDR 17,800'}}},
+    scales:{x:{grid:{color:'#EEF2E4'},ticks:{callback:v=>'Rp'+v+'M'},
+      title:{display:true,text:'Rupiah millions per card'}},y:{grid:{display:false}}}}
+  });
+ },
+
+ chBacklog:()=>new Chart(document.getElementById('chBacklog'),{
+  type:'line',
+  data:{labels:['2 Jun','8 Jun','30 Jun','14 Jul','28 Jul'],
+   datasets:[
+    {label:'Active backlog',data:[10,11.5,12,11,12.4],borderColor:R,backgroundColor:'rgba(179,58,58,.08)',
+     fill:true,tension:.28,borderWidth:2.5,pointRadius:4,pointBackgroundColor:R,pointBorderColor:'#fff',pointBorderWidth:2},
+    {label:'PSA target',data:[5,5,5,5,5],borderColor:HD,borderDash:[6,5],borderWidth:2,pointRadius:0,fill:false}
+   ]},
+  options:{responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:14,font:{size:12.5}}},
+    tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y+'M units'}}},
+   scales:{y:{beginAtZero:true,suggestedMax:14,grid:{color:'#EEF2E4'},
+     ticks:{callback:v=>v+'M'},title:{display:true,text:'Millions of units, 2026'}},
+    x:{grid:{display:false}}}}
+ })
+};
+
+/* ---------- lazy chart build ---------- */
+const cio=new IntersectionObserver((es,o)=>{
+ es.forEach(e=>{if(e.isIntersecting){
+  const id=e.target.id;
+  if(chartDefs[id]){build(id,chartDefs[id]);o.unobserve(e.target);}
+ }});
+},{rootMargin:'200px 0px'});
+Object.keys(chartDefs).forEach(id=>{
+ const el=document.getElementById(id);if(el)cio.observe(el);
+});
+
+/* ---------- reveal + counters + bars ---------- */
+function animateCount(el){
+ const target=parseFloat(el.dataset.count);
+ if(isNaN(target))return;
+ const dec=parseInt(el.dataset.dec||'0',10);
+ const pre=el.dataset.pre||'',suf=el.dataset.suf||'';
+ const dur=900,t0=performance.now();
+ function step(t){
+  const p=Math.min(1,(t-t0)/dur);
+  const e=1-Math.pow(1-p,3);
+  el.textContent=pre+(target*e).toFixed(dec)+suf;
+  if(p<1)requestAnimationFrame(step);
+ }
+ requestAnimationFrame(step);
+}
+
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const rio=new IntersectionObserver((es,o)=>{
+ es.forEach(e=>{
+  if(!e.isIntersecting)return;
+  const el=e.target;
+  el.classList.add('in');
+  if(!reduced){
+   el.querySelectorAll('[data-count]').forEach(animateCount);
+  }
+  o.unobserve(el);
+ });
+},{rootMargin:'0px 0px -12% 0px'});
+document.querySelectorAll('.rv').forEach(el=>rio.observe(el));
+
+/* funnel + margin bars fill on entry */
+const bio=new IntersectionObserver((es,o)=>{
+ es.forEach(e=>{
+  if(!e.isIntersecting)return;
+  e.target.querySelectorAll('[data-w]').forEach((b,i)=>{
+   setTimeout(()=>{b.style.width=b.dataset.w+'%';},reduced?0:i*90);
+  });
+  o.unobserve(e.target);
+ });
+},{rootMargin:'0px 0px -10% 0px'});
+document.querySelectorAll('.funnel,.stack').forEach(el=>bio.observe(el));
+
+/* ---------- player table filter ---------- */
+const pf=document.getElementById('pfilter');
+if(pf){
+ const rows=[...document.querySelectorAll('#ptable tbody tr')];
+ const cnt=document.getElementById('pcount');
+ const upd=()=>{
+  const q=pf.value.trim().toLowerCase();
+  let n=0;
+  rows.forEach(r=>{
+   const hit=!q||r.textContent.toLowerCase().includes(q);
+   r.classList.toggle('hide',!hit);
+   if(hit)n++;
+  });
+  cnt.textContent=n+' of '+rows.length+' players';
+ };
+ pf.addEventListener('input',upd);
+ upd();
+}
+
+/* ---------- scroll progress ---------- */
+const prog=document.getElementById('prog');
+const btn=document.getElementById('top-btn');
+function onScroll(){
+ const h=document.documentElement.scrollHeight-window.innerHeight;
+ const p=h>0?(window.scrollY/h)*100:0;
+ prog.style.width=p+'%';
+ btn.classList.toggle('show',window.scrollY>700);
+}
+window.addEventListener('scroll',onScroll,{passive:true});
+onScroll();
+btn.addEventListener('click',()=>window.scrollTo({top:0,behavior:reduced?'auto':'smooth'}));
+
+/* ---------- nav highlight ---------- */
+const secs=[...document.querySelectorAll('#top,#global,#stack,#asia,#sea,#indo,#window,#verdict')];
+const links=[...document.querySelectorAll('nav a')];
+const io=new IntersectionObserver(es=>{
+ es.forEach(e=>{if(e.isIntersecting){
+  links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));}});
+},{rootMargin:'-45% 0px -50% 0px'});
+secs.forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
